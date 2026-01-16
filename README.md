@@ -21,6 +21,7 @@ The developer assumes no liability for misuse of this tool.
 |❌ Manual report writing|	✅ Automated professional reports|
 |❌ One-size-fits-all approach|	✅ Adaptive to target technology|
 
+
 ## Key Features
 ### AI-Powered Intelligence
 * Local LLM Integration (Ollama) for privacy-preserving analysis
@@ -104,11 +105,46 @@ The developer assumes no liability for misuse of this tool.
 └─────────────────────────────────────────────────┘
 ```
 
+
 ## Prerequisites
 * Python 3.11+
 * Docker & Docker Compose
 * Git
 * 8GB+ RAM (for AI models)
+
+## How to Use
+
+1. **Install dependencies:**
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+2. **Install Go-based tools (optional, for full functionality):**
+    ```sh
+    go install github.com/tomnomnom/waybackurls@latest
+    # ...install other tools as needed
+    ```
+
+3. **Run discovery:**
+    ```sh
+    rexen discover https://target.com
+    ```
+    Results will be saved in the `src/data/results/` directory.
+
+4. **Analyze results:**
+    ```sh
+    rexen analyze target.com
+    ```
+    This will categorize and summarize discovered URLs.
+
+5. **See all commands:**
+    ```sh
+    rexen --help
+    ```
+
+For advanced usage, see the [docs/](docs/) folder.
+
+## How to use
 
 ## Tool Integration
 ReXeN integrates with 30+ security tools:

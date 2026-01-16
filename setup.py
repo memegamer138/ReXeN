@@ -1,6 +1,7 @@
 """
 Setup script for ReXeN.
 Installs the package and creates console script 'rexen'.
+To install, run: pip install -e .
 """
 
 from setuptools import setup, find_packages

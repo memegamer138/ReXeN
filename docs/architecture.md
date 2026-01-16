@@ -38,11 +38,8 @@
 ## Tech Stack
 **Primary Language:** Python 3.11
 
-Fast for prototyping, rich security ecosystem
-
-Great async support for parallel tool execution
-
-ML/AI libraries readily available
+Go for waybackurl
+Rust for pydantic
 
 ## Project Structure
 

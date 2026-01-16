@@ -7,6 +7,7 @@ Commands: discover, analyze, report, validate, etc.
 
 import click
 import json
+import time
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -34,8 +35,16 @@ def discover(domain, output, simple):
     Discover URLs and endpoints for a domain.
     Uses waybackurls and other discovery tools.
     """
+    from urllib.parse import urlparse
     if not output:
-        output = config.RESULTS_DIR / f"{domain}.json"
+        # Strip scheme (http:// or https://) and trailing slashes for filename
+        parsed = urlparse(domain)
+        if parsed.netloc:
+            safe_domain = parsed.netloc
+        else:
+            # If no scheme, domain is just the input
+            safe_domain = domain.split('/')[0]
+        output = config.RESULTS_DIR / f"{safe_domain}.json"
     
     console.print(f"[bold green]🚀 Starting discovery for {domain}[/bold green]")
     console.print(f"[dim]Results will be saved to: {output}[/dim]")
@@ -59,7 +68,8 @@ def discover(domain, output, simple):
         task = progress.add_task("Discovering URLs...", total=None)
         
         orchestrator = Orchestrator()
-        results = orchestrator.run_all(tools, domain)
+        # Pass empty args list to each tool
+        results = orchestrator.run_all(tools, domain, args=[])
         
         progress.update(task, completed=100)
     
