@@ -46,7 +46,7 @@ def discover(domain, output, simple):
             safe_domain = domain.split('/')[0]
         output = config.RESULTS_DIR / f"{safe_domain}.json"
     
-    console.print(f"[bold green]🚀 Starting discovery for {domain}[/bold green]")
+    console.print(f"[bold green]Starting discovery for {domain}[/bold green]")
     console.print(f"[dim]Results will be saved to: {output}[/dim]")
     
     from rexen.tools.discovery.gau import GauTool
@@ -90,22 +90,27 @@ def discover(domain, output, simple):
         else:
             console.print(f"[red]✗ {tool_name}: Failed - {result.get('error', 'Unknown error')}[/red]")
 
-    # Deduplicate and save
+    # Deduplicate
     unique_urls = list(set(all_urls))
-    console.print(f"[bold]📊 Total unique URLs found: {len(unique_urls)}[/bold]")
-    
+
+    # Clean URLs using regex
+    import re
+    url_re = re.compile(r'^https?://[a-zA-Z0-9.-]+(:[0-9]+)?(/[\w\-./?%&=:#@]*)?$')
+    cleaned_urls = [u for u in unique_urls if url_re.match(u)]
+    console.print(f"[bold]📊 Total unique URLs found: {len(unique_urls)} | Clean URLs: {len(cleaned_urls)}[/bold]")
+
     # Save results
     output_data = {
         "domain": domain,
-        "total_urls": len(unique_urls),
-        "urls": unique_urls,
+        "total_urls": len(cleaned_urls),
+        "urls": cleaned_urls,
         "tools_used": list(results.keys()),
         "timestamp": time.time()
     }
-    
+
     with open(output, "w") as f:
         json.dump(output_data, f, indent=2)
-    
+
     console.print(f"[green]✅ Results saved to {output}[/green]")
     
     # Show sample URLs
@@ -161,10 +166,10 @@ def analyze(domain, limit):
         return
 
     # Debug: print a sample of the raw httpx output
-    console.print("[yellow]--- httpx raw stdout (first 10 lines) ---[/yellow]")
+    '''console.print("[yellow]--- httpx raw stdout (first 10 lines) ---[/yellow]")
     for line in result.get("stdout", "").splitlines()[:10]:
         console.print(line)
-    console.print("[yellow]--- end httpx raw stdout ---[/yellow]")
+    console.print("[yellow]--- end httpx raw stdout ---[/yellow]")'''
 
     # Debug: print a sample of the parsed results
     results = result["results"]
