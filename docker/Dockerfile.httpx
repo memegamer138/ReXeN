@@ -1,0 +1,12 @@
+# Dockerfile for httpx tool
+FROM golang:1.24-alpine AS builder
+
+RUN apk add --no-cache git
+
+RUN git clone https://github.com/projectdiscovery/httpx.git /src/httpx
+WORKDIR /src/httpx/cmd/httpx
+RUN go build -o /usr/local/bin/httpx
+
+# Minimal runtime image
+FROM alpine:3.18
+COPY --from=builder /usr/local/bin/httpx /usr/local/bin/httpx
