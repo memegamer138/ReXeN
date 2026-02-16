@@ -12,23 +12,45 @@ class WaybackTool(Tool):
     def __init__(self):
         super().__init__(
             name="waybackurls",
-            command="waybackurls",
-            install_url="go install github.com/tomnomnom/waybackurls@latest"
+            command="docker",
+            install_url="docker build -f docker/Dockerfile.waybackurls -t waybackurls-image ."
         )
+        self.image = "waybackurls-image"
     
     def run(self, target: str, args: List[str]) -> Dict[str, Any]:
-        """Run waybackurls and parse output."""
-        # Default args for waybackurls
-        default_args = []
-        full_args = (args or []) + default_args
-        
-        result = super().run(target, full_args)
-        
-        if result["success"]:
-            result["urls"] = self.parse_output(result["stdout"])
-            result["url_count"] = len(result["urls"])
-        
-        return result
+        """Run waybackurls in a Docker container and parse output."""
+        import subprocess
+        # Compose the docker run command
+        docker_cmd = [
+            "docker", "run", "--rm",
+            self.image,
+            "waybackurls"
+        ] + (args or []) + [target]
+        try:
+            result = subprocess.run(
+                docker_cmd,
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+            success = result.returncode == 0
+            output = result.stdout
+            parsed_urls = self.parse_output(output) if success else []
+            return {
+                "success": success,
+                "stdout": output,
+                "stderr": result.stderr,
+                "urls": parsed_urls,
+                "url_count": len(parsed_urls),
+                "command": " ".join(docker_cmd),
+                "returncode": result.returncode
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": " ".join(docker_cmd)
+            }
     
     def parse_output(self, stdout: str) -> List[str]:
         """Extract URLs from waybackurls output."""
