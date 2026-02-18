@@ -1,29 +1,29 @@
 """
-GAU (GetAllUrls) tool wrapper.
-Uses gau to find historical and indexed URLs for a domain.
+Subfinder tool wrapper.
+Uses subfinder to find live subdomains for a domain.
 """
 
 from ..base import Tool
 from typing import List, Dict, Any
 import subprocess
 
-class GauTool(Tool):
-    """Wrapper for gau tool (dockerized)."""
+class SubfinderTool(Tool):
+    """Wrapper for subfinder tool (dockerized)."""
     def __init__(self):
         super().__init__(
-            name="gau",
+            name="subfinder",
             command="docker",
-            install_url="docker build -f docker/Dockerfile.gau -t gau-image ."
+            install_url="docker build -f docker/Dockerfile.subfinder -t subfinder-image ."
         )
-        self.image = "gau-image"
+        self.image = "subfinder-image"
 
     def run(self, target: str, args: List[str]) -> Dict[str, Any]:
-        """Run gau in a Docker container and parse output."""
+        """Run subfinder in a Docker container and parse output."""
         docker_cmd = [
             "docker", "run", "--rm",
             self.image,
-            "gau"
-        ] + (args or []) + [target]
+            "subfinder", "-silent", "-d", target
+        ] + (args or [])
         try:
             result = subprocess.run(
                 docker_cmd,
@@ -33,13 +33,13 @@ class GauTool(Tool):
             )
             success = result.returncode == 0
             output = result.stdout
-            parsed_urls = self.parse_output(output) if success else []
+            parsed_subdomains = self.parse_output(output) if success else []
             return {
                 "success": success,
                 "stdout": output,
                 "stderr": result.stderr,
-                "urls": parsed_urls,
-                "url_count": len(parsed_urls),
+                "subdomains": parsed_subdomains,
+                "subdomain_count": len(parsed_subdomains),
                 "command": " ".join(docker_cmd),
                 "returncode": result.returncode
             }
@@ -51,10 +51,5 @@ class GauTool(Tool):
             }
 
     def parse_output(self, stdout: str) -> List[str]:
-        """Extract URLs from gau output."""
-        urls = []
-        for line in stdout.strip().split("\n"):
-            line = line.strip()
-            if line and "//" in line:
-                urls.append(line)
-        return urls
+        """Extract subdomains from subfinder output."""
+        return [line.strip() for line in stdout.strip().split("\n") if line.strip()]

@@ -15,7 +15,6 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 # Import our modules
 from rexen.core.orchestrator import Orchestrator
-from rexen.tools.discovery.wayback import WaybackTool
 from rexen.config import config
 
 console = Console()
@@ -44,38 +43,101 @@ def discover(domain, output, simple):
         else:
             # If no scheme, domain is just the input
             safe_domain = domain.split('/')[0]
-        output = config.RESULTS_DIR / f"{safe_domain}.json"
+        output = config.RESULTS_DIR / f"discover_{safe_domain}.json"
     
     console.print(f"[bold green]Starting discovery for {domain}[/bold green]")
     console.print(f"[dim]Results will be saved to: {output}[/dim]")
     
-    from rexen.tools.discovery.gau import GauTool
-    # Initialize tools
-    tools = [WaybackTool(), GauTool()]
-    
-    # Check installation
-    for tool in tools:
-        if not tool.is_installed:
-            console.print(f"[red]⚠️ {tool.name} not installed[/red]")
-            console.print(f"Install with: {tool.install_url}")
-            return
-    
-    # Run discovery
+    from rexen.tools.discovery.subfinder import SubfinderTool
+    # Initialize tool
+    tool = SubfinderTool()
+    if not tool.is_installed:
+        console.print(f"[red]⚠️ {tool.name} not installed[/red]")
+        console.print(f"Install with: {tool.install_url}")
+        return
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console
     ) as progress:
-        task = progress.add_task("Discovering URLs...", total=None)
-        
+        task = progress.add_task("Discovering subdomains...", total=None)
         orchestrator = Orchestrator()
-        # Pass empty args list to each tool
-        results = orchestrator.run_all(tools, domain, args=[])
-        
+        result = orchestrator.run_tool(tool, domain, args=[])
         progress.update(task, completed=100)
-    
 
-    # Process results and print per-tool stats
+    if result.get("success"):
+        subdomains = result.get("subdomains", [])
+        console.print(f"[green]✓ subfinder: Found {len(subdomains)} subdomains[/green]")
+        for sd in subdomains[:3]:
+            console.print(f"    [dim]{sd}[/dim]")
+    else:
+        console.print(f"[red]✗ subfinder: Failed - {result.get('error', 'Unknown error')}[/red]")
+        subdomains = []
+
+    unique_subdomains = list(set(subdomains))
+    console.print(f"[bold]Total unique subdomains found: {len(unique_subdomains)}[/bold]")
+
+    # Save results
+    output_data = {
+        "domain": domain,
+        "total_subdomains": len(unique_subdomains),
+        "subdomains": unique_subdomains,
+        "tool_used": "subfinder",
+        "timestamp": time.time()
+    }
+
+    with open(output, "w") as f:
+        json.dump(output_data, f, indent=2)
+
+    console.print(f"[green] Results saved to {output}[/green]")
+
+    if unique_subdomains:
+        console.print("\n[bold]Sample subdomains:[/bold]")
+        for sd in unique_subdomains[:5]:
+            console.print(f"  • {sd}")
+        if len(unique_subdomains) > 5:
+            console.print(f"  • ... and {len(unique_subdomains) - 5} more")
+
+@cli.command()
+@click.argument("domain")
+@click.option("--output", "-o", help="Output file")
+def crawl(domain, output):
+    """
+    Crawl a domain using gospider and katana to discover URLs.
+    Results are saved as crawl_domain.json.
+    """
+    from urllib.parse import urlparse
+    if not output:
+        parsed = urlparse(domain)
+        if parsed.netloc:
+            safe_domain = parsed.netloc
+        else:
+            safe_domain = domain.split('/')[0]
+        output = config.RESULTS_DIR / f"crawl_{safe_domain}.json"
+
+    console.print(f"[bold green]Starting crawl for {domain}[/bold green]")
+    console.print(f"[dim]Results will be saved to: {output}[/dim]")
+
+    from rexen.tools.crawlers.gospider import GospiderTool
+    from rexen.tools.crawlers.katana import KatanaTool
+    tools = [GospiderTool(), KatanaTool()]
+
+    for tool in tools:
+        if not tool.is_installed:
+            console.print(f"[red]⚠️ {tool.name} not installed[/red]")
+            console.print(f"Install with: {tool.install_url}")
+            return
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console
+    ) as progress:
+        task = progress.add_task("Crawling URLs...", total=None)
+        orchestrator = Orchestrator()
+        results = orchestrator.run_all(tools, domain, args=[])
+        progress.update(task, completed=100)
+
     all_urls = []
     tool_url_map = {}
     for tool_name, result in results.items():
@@ -83,27 +145,19 @@ def discover(domain, output, simple):
             urls = result.get("urls", [])
             tool_url_map[tool_name] = urls
             console.print(f"[green]✓ {tool_name}: Found {len(urls)} URLs[/green]")
-            # Show up to 3 sample URLs per tool
             for url in urls[:3]:
                 console.print(f"    [dim]{url}[/dim]")
             all_urls.extend(urls)
         else:
             console.print(f"[red]✗ {tool_name}: Failed - {result.get('error', 'Unknown error')}[/red]")
 
-    # Deduplicate
     unique_urls = list(set(all_urls))
+    console.print(f"[bold]Total unique URLs found: {len(unique_urls)}[/bold]")
 
-    # Clean URLs using regex
-    import re
-    url_re = re.compile(r'^https?://[a-zA-Z0-9.-]+(:[0-9]+)?(/[\w\-./?%&=:#@]*)?$')
-    cleaned_urls = [u for u in unique_urls if url_re.match(u)]
-    console.print(f"[bold]📊 Total unique URLs found: {len(unique_urls)} | Clean URLs: {len(cleaned_urls)}[/bold]")
-
-    # Save results
     output_data = {
         "domain": domain,
-        "total_urls": len(cleaned_urls),
-        "urls": cleaned_urls,
+        "total_urls": len(unique_urls),
+        "urls": unique_urls,
         "tools_used": list(results.keys()),
         "timestamp": time.time()
     }
@@ -111,38 +165,32 @@ def discover(domain, output, simple):
     with open(output, "w") as f:
         json.dump(output_data, f, indent=2)
 
-    console.print(f"[green]✅ Results saved to {output}[/green]")
-    
-    # Show sample URLs
+    console.print(f"[green] Results saved to {output}[/green]")
+
     if unique_urls:
         console.print("\n[bold]Sample URLs:[/bold]")
-        for url in unique_urls[:5]:  # Show first 5
+        for url in unique_urls[:5]:
             console.print(f"  • {url}")
         if len(unique_urls) > 5:
             console.print(f"  • ... and {len(unique_urls) - 5} more")
+            
 
 @cli.command()
-@click.argument("domain")
-@click.option("--limit", help="Max URLs to probe")
-def analyze(domain, limit):
-    """Probe discovered URLs with httpx to find live sites."""
+@click.argument("input", nargs=1)
+@click.option("--limit", help="Max URLs to probe (e.g. --limit 1000 scans first 1000 URLs)")
+def analyze(input, limit):
+    """
+    Probe URLs with httpx to find live sites.
+    INPUT can be:
+      - a single URL (http/https)
+      - a path to a JSON file with a 'urls' array
+      - a path to a text file with one URL per line
+    """
     from rexen.tools.discovery.httpx import HttpxTool
+    import os
+    import json
     from urllib.parse import urlparse
-    # Normalize domain to match discover's output filename logic
-    parsed = urlparse(domain)
-    if parsed.netloc:
-        safe_domain = parsed.netloc
-    else:
-        safe_domain = domain.split('/')[0]
-    results_file = config.RESULTS_DIR / f"{safe_domain}.json"
-    if not results_file.exists():
-        console.print(f"[red]No results found for {domain}[/red]")
-        console.print(f"Run: rexen discover {domain}")
-        return
-    with open(results_file) as f:
-        data = json.load(f)
-    # Pass all URLs from the JSON's urls array directly to httpx
-    from urllib.parse import urlparse
+
     def is_valid_url(url):
         try:
             parsed = urlparse(url)
@@ -150,31 +198,52 @@ def analyze(domain, limit):
         except Exception:
             return False
 
-    # Clean and filter URLs before probing
-    urls = [u for u in data["urls"] if is_valid_url(u)][:limit]
+    urls = []
+    # If input looks like a URL, use it directly
+    if input.startswith("http://") or input.startswith("https://"):
+        urls = [input]
+    elif os.path.isfile(input):
+        # Try to load as JSON first
+        try:
+            with open(input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict) and "urls" in data:
+                urls = [u for u in data["urls"] if is_valid_url(u)]
+        except Exception:
+            # Not JSON, try as plain text
+            with open(input, "r", encoding="utf-8") as f:
+                urls = [line.strip() for line in f if is_valid_url(line.strip())]
+    else:
+        console.print(f"[red]Input '{input}' is not a valid URL or file.[/red]")
+        return
+
+    if limit:
+        try:
+            limit = int(limit)
+        except Exception:
+            console.print(f"[red]Invalid limit value: {limit}. Using all URLs.[/red]")
+            limit = None
+    if limit:
+        urls = urls[:limit]
+    if not urls:
+        console.print(f"[red]No valid URLs to probe.[/red]")
+        return
     console.print(f"[bold blue]Probing {len(urls)} URLs for liveness with httpx...[/bold blue]")
+    if urls:
+        console.print("[yellow]First 10 URLs sent to httpx:[/yellow]")
+        for u in urls[:10]:
+            console.print(f"  [dim]{u}[/dim]")
     from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TaskProgressColumn
-    # Show spinner while httpx runs
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
         task = progress.add_task("Running httpx...", total=None)
         httpx_tool = HttpxTool()
-        # Add rate limit to httpx (4 req/sec = 240/min)
         result = httpx_tool.run(urls, args=["-rl", "4"])
         progress.update(task, completed=100)
     if not result["success"]:
         console.print(f"[red]httpx failed: {result.get('error', 'Unknown error')}[/red]")
         return
-
-    # Debug: print a sample of the raw httpx output
-    '''console.print("[yellow]--- httpx raw stdout (first 10 lines) ---[/yellow]")
-    for line in result.get("stdout", "").splitlines()[:10]:
-        console.print(line)
-    console.print("[yellow]--- end httpx raw stdout ---[/yellow]")'''
-
-    # Debug: print a sample of the parsed results
     results = result["results"]
     console.print(f"[yellow]Parsed results sample (first 5):[/yellow] {results[:5]}")
-
     live = []
     with Progress(
         TextColumn("[progress.description]{task.description}"),
@@ -187,7 +256,7 @@ def analyze(domain, limit):
             if r.get("status") and (r["status"].startswith("[2") or r["status"].startswith("[3")):
                 live.append(r)
             progress.advance(task)
-    table = Table(title="Live URLs (Status 2xx)")
+    table = Table(title="Live URLs (Status 2xx/3xx)")
     table.add_column("URL", style="cyan")
     table.add_column("Status", style="green")
     for r in live:
