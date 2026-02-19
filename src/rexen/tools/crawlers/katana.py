@@ -56,7 +56,6 @@ class KatanaTool(Tool):
 
     def parse_output(self, stdout: str, target_domain: Optional[str] = None) -> List[str]:
         """Extract URLs from katana output, filtering static assets and out-of-scope domains."""
-        import re
         from urllib.parse import urlparse
         static_exts = (
             ".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".woff", ".woff2", ".ttf", ".eot", ".otf", ".mp4", ".webm", ".pdf", ".zip", ".tar", ".gz", ".rar", ".7z", ".mp3", ".wav", ".avi", ".mov", ".mkv"

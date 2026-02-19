@@ -1,14 +1,11 @@
 # Dockerfile for subfinder tool
-FROM golang:1.24-alpine AS builder
-
-RUN apk add --no-cache git
-
-RUN git clone https://github.com/projectdiscovery/subfinder.git /subfinder \
-    && cd /subfinder \
-    && git checkout v2.12.0 \
-    && cd /subfinder/cmd/subfinder \
-    && go build -o /usr/local/bin/subfinder
-
-# Minimal runtime image
 FROM alpine:3.18
-COPY --from=builder /usr/local/bin/subfinder /usr/local/bin/subfinder
+RUN apk add --no-cache curl coreutils unzip
+ENV SUBFINDER_VERSION=2.12.0
+ENV SUBFINDER_SHA256=07b62ba640cf009ed70e2dea8cf09ffa43a6ab961d9db4d951ee20f4e025de34
+RUN curl -sSL -o subfinder.zip "https://github.com/projectdiscovery/subfinder/releases/download/v${SUBFINDER_VERSION}/subfinder_${SUBFINDER_VERSION}_linux_amd64.zip" \
+    && unzip -o subfinder.zip \
+    && echo "$SUBFINDER_SHA256  subfinder" | sha256sum -c - \
+    && mv subfinder /usr/local/bin/subfinder \
+    && chmod +x /usr/local/bin/subfinder \
+    && rm -rf subfinder.zip LICENSE.md README.md

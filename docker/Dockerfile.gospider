@@ -1,11 +1,7 @@
-FROM golang:1.24-alpine AS builder
-
-RUN apk add --no-cache git
-RUN git clone https://github.com/jaeles-project/gospider.git /gospider \
-    && cd /gospider \
-    && git checkout v1.1.6 \
-    && go build -o /usr/local/bin/gospider .
-
-# Minimal runtime image
 FROM alpine:3.18
-COPY --from=builder /usr/local/bin/gospider /usr/local/bin/gospider
+RUN apk add --no-cache curl coreutils
+ENV GOSPIDER_VERSION=1.1.6
+ENV GOSPIDER_SHA256=0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5
+RUN curl -sSL -o /usr/local/bin/gospider "https://github.com/jaeles-project/gospider/releases/download/v${GOSPIDER_VERSION}/gospider_${GOSPIDER_VERSION}_linux_amd64" \
+    && echo "$GOSPIDER_SHA256  /usr/local/bin/gospider" | sha256sum -c - \
+    && chmod +x /usr/local/bin/gospider
