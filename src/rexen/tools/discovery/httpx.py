@@ -25,29 +25,20 @@ class HttpxTool(Tool):
         """Run httpx in a Docker container and parse output."""
         import tempfile
         import os
-        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
-            for url in target:
-                f.write(url + "\n")
-            input_file = f.name
-
-        # Debug: print the temp file path and first 10 lines of input
-        '''print(f"[DEBUG] httpx input file: {input_file}")
+        input_file = None
+        docker_cmd = []
         try:
-            with open(input_file, "r", encoding="utf-8", errors="replace") as fin:
-                for i, line in enumerate(fin):
-                    if i >= 10:
-                        break
-                    #print(f"[DEBUG] input {i+1}: {line.strip()}")
-        except Exception as e:
-            print(f"[DEBUG] Could not read input file: {e}")'''
+            with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+                for url in target:
+                    f.write(url + "\n")
+                input_file = f.name
 
-        docker_cmd = [
-            "docker", "run", "--rm",
-            "-v", f"{input_file}:/input.txt",
-            self.image,
-            "httpx", "-l", "/input.txt"
-        ] + (args or [])
-        try:
+            docker_cmd = [
+                "docker", "run", "--rm",
+                "-v", f"{input_file}:/input.txt",
+                self.image,
+                "httpx", "-l", "/input.txt"
+            ] + (args or [])
             result = subprocess.run(
                 docker_cmd,
                 capture_output=True,
@@ -71,8 +62,14 @@ class HttpxTool(Tool):
             return {
                 "success": False,
                 "error": str(e),
-                "command": " ".join(docker_cmd)
+                "command": " ".join(docker_cmd) if docker_cmd else ""
             }
+        finally:
+            if input_file and os.path.exists(input_file):
+                try:
+                    os.unlink(input_file)
+                except Exception:
+                    pass
 
     def parse_output(self, stdout: str) -> List[Dict[str, Any]]:
         """Parse httpx output into structured results."""
