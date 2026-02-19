@@ -1,11 +1,11 @@
 # Dockerfile for katana tool
-FROM golang:1.24-alpine AS builder
-
-RUN apk add --no-cache git
-RUN git clone https://github.com/projectdiscovery/katana.git /src/katana
-WORKDIR /src/katana/cmd/katana
-RUN go build -o /usr/local/bin/katana
-
-# Minimal runtime image
 FROM alpine:3.18
-COPY --from=builder /usr/local/bin/katana /usr/local/bin/katana
+RUN apk add --no-cache curl
+ARG KATANA_VERSION=v1.4.0
+ARG KATANA_URL="https://github.com/projectdiscovery/katana/releases/download/${KATANA_VERSION}/katana_${KATANA_VERSION#v}_linux_amd64.zip"
+WORKDIR /tmp
+RUN curl -sSL -o katana.zip "$KATANA_URL" \
+	&& unzip katana.zip \
+	&& mv katana /usr/local/bin/katana \
+	&& chmod +x /usr/local/bin/katana \
+	&& rm -rf katana.zip LICENSE README.md

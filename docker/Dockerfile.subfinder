@@ -3,9 +3,11 @@ FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git
 
-RUN git clone https://github.com/projectdiscovery/subfinder.git /src/subfinder
-WORKDIR /src/subfinder/cmd/subfinder
-RUN go build -o /usr/local/bin/subfinder
+RUN git clone https://github.com/projectdiscovery/subfinder.git /subfinder \
+    && cd /subfinder \
+    && git checkout v2.12.0 \
+    && cd /subfinder/cmd/subfinder \
+    && go build -o /usr/local/bin/subfinder
 
 # Minimal runtime image
 FROM alpine:3.18
