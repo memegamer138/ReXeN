@@ -28,7 +28,7 @@ class Tool:
         except (FileNotFoundError, PermissionError):
             return False
     
-    def run(self, target: str, args: List[str]) -> Dict[str, Any]:
+    def run(self, target: Any, args: List[str]) -> Dict[str, Any]:
         """
         Run the tool against a target.
         Returns dict with stdout, stderr, and success status.

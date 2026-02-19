@@ -1,0 +1,11 @@
+# Dockerfile for httpx tool
+FROM alpine:3.18
+RUN apk add --no-cache curl coreutils unzip
+ENV HTTPX_VERSION=1.8.1
+ENV HTTPX_SHA256=404c92d8d219fb60db1fc96860ed0e10a3da94f409c9b00e567a1950ce4f05cc
+RUN curl -sSL -o httpx.zip "https://github.com/projectdiscovery/httpx/releases/download/v${HTTPX_VERSION}/httpx_${HTTPX_VERSION}_linux_amd64.zip" \
+	&& unzip -o httpx.zip \
+	&& echo "$HTTPX_SHA256  httpx" | sha256sum -c - \
+	&& mv httpx /usr/local/bin/httpx \
+	&& chmod +x /usr/local/bin/httpx \
+	&& rm -rf httpx.zip LICENSE.md README.md
