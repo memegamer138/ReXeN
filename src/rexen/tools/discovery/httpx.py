@@ -1,6 +1,10 @@
 """
 Httpx tool wrapper.
 Uses httpx to probe URLs and check which are live.
+
+For running through docker, use: 
+
+docker run --rm httpx-image httpx -u https://httpbin.org/ -json
 """
 
 from ..base import Tool
