@@ -5,16 +5,21 @@ Provides command-line interface for all recon operations.
 Commands: discover, analyze, report, validate, etc.
 """
 
+import os
 import click
 import json
 import time
-from pathlib import Path
 from rich.console import Console
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TaskProgressColumn
+from urllib.parse import urlparse
 
 # Import our modules
 from rexen.core.orchestrator import Orchestrator
+from rexen.tools.discovery.subfinder import SubfinderTool
+from rexen.tools.crawlers.gospider import GospiderTool
+from rexen.tools.crawlers.katana import KatanaTool
+from rexen.tools.discovery.httpx import HttpxTool
 from rexen.config import config
 
 console = Console()
@@ -34,7 +39,7 @@ def discover(domain, output, simple):
     Discover URLs and endpoints for a domain.
     Uses waybackurls and other discovery tools.
     """
-    from urllib.parse import urlparse
+
     if not output:
         # Strip scheme (http:// or https://) and trailing slashes for filename
         parsed = urlparse(domain)
@@ -48,7 +53,7 @@ def discover(domain, output, simple):
     console.print(f"[bold green]Starting discovery for {domain}[/bold green]")
     console.print(f"[dim]Results will be saved to: {output}[/dim]")
     
-    from rexen.tools.discovery.subfinder import SubfinderTool
+
     # Initialize tool
     tool = SubfinderTool()
     if not tool.is_installed:
@@ -106,7 +111,6 @@ def crawl(domain, output):
     Crawl a domain using gospider and katana to discover URLs.
     Results are saved as crawl_domain.json.
     """
-    from urllib.parse import urlparse
     if not output:
         parsed = urlparse(domain)
         if parsed.netloc:
@@ -117,9 +121,6 @@ def crawl(domain, output):
 
     console.print(f"[bold green]Starting crawl for {domain}[/bold green]")
     console.print(f"[dim]Results will be saved to: {output}[/dim]")
-
-    from rexen.tools.crawlers.gospider import GospiderTool
-    from rexen.tools.crawlers.katana import KatanaTool
     tools = [GospiderTool(), KatanaTool()]
 
     for tool in tools:
@@ -186,10 +187,6 @@ def analyze(input, limit):
       - a path to a JSON file with a 'urls' array
       - a path to a text file with one URL per line
     """
-    from rexen.tools.discovery.httpx import HttpxTool
-    import os
-    import json
-    from urllib.parse import urlparse
 
     def is_valid_url(url):
         try:
@@ -199,9 +196,10 @@ def analyze(input, limit):
             return False
 
     urls = []
-    # If input looks like a URL, use it directly
+    # If input looks like a URL, validate and use it directly
     if input.startswith("http://") or input.startswith("https://"):
-        urls = [input]
+        if not is_valid_url(input):
+            console.print(f"[red]Input '{input}' is not a valid URL.[/red]")
     elif os.path.isfile(input):
         # Try to load as JSON first
         try:
@@ -233,7 +231,7 @@ def analyze(input, limit):
         console.print("[yellow]First 10 URLs sent to httpx:[/yellow]")
         for u in urls[:10]:
             console.print(f"  [dim]{u}[/dim]")
-    from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TaskProgressColumn
+
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
         task = progress.add_task("Running httpx...", total=None)
         httpx_tool = HttpxTool()
@@ -244,6 +242,7 @@ def analyze(input, limit):
         return
     results = result["results"]
     console.print(f"[yellow]Parsed results sample (first 5):[/yellow] {results[:5]}")
+    import re
     live = []
     with Progress(
         TextColumn("[progress.description]{task.description}"),
@@ -253,8 +252,13 @@ def analyze(input, limit):
     ) as progress:
         task = progress.add_task(f"Filtering live URLs...", total=len(results))
         for r in results:
-            if r.get("status") and (r["status"].startswith("[2") or r["status"].startswith("[3")):
-                live.append(r)
+            status = r.get("status")
+            if status:
+                match = re.search(r"(\d{3})", status)
+                if match:
+                    code = int(match.group(1))
+                    if 200 <= code < 400:
+                        live.append(r)
             progress.advance(task)
     table = Table(title="Live URLs (Status 2xx/3xx)")
     table.add_column("URL", style="cyan")
@@ -265,5 +269,4 @@ def analyze(input, limit):
     console.print(f"[bold]Total live URLs: {len(live)}[/bold]")
 
 if __name__ == "__main__":
-    import time
     cli()

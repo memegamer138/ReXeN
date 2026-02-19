@@ -1,9 +1,24 @@
+from rexen.tools.discovery.subfinder import SubfinderTool
 import pytest
 from unittest.mock import patch, MagicMock
 from rexen.tools.crawlers.gospider import GospiderTool
 from rexen.tools.crawlers.katana import KatanaTool
 from rexen.tools.discovery.httpx import HttpxTool
 
+@patch("subprocess.run")
+def test_subfinder_run_success(mock_run):
+    mock_result = MagicMock()
+    mock_result.returncode = 0
+    mock_result.stdout = "example.com\nsub.example.com"
+    mock_result.stderr = ""
+    mock_run.return_value = mock_result
+    tool = SubfinderTool()
+    tool.is_installed = True
+    result = tool.run("example.com", [])
+    assert result["success"] is True
+    assert "example.com" in result["subdomains"]
+    assert "sub.example.com" in result["subdomains"]
+    
 @patch("subprocess.run")
 def test_gospider_run_success(mock_run):
     mock_result = MagicMock()

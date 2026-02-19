@@ -4,7 +4,7 @@ Uses katana to crawl a domain and discover URLs.
 """
 
 from ..base import Tool
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import subprocess
 
 class KatanaTool(Tool):
@@ -33,7 +33,11 @@ class KatanaTool(Tool):
             )
             success = result.returncode == 0
             output = result.stdout
-            urls = self.parse_output(output) if success else []
+            # Pass the target domain to parse_output
+            from urllib.parse import urlparse
+            parsed = urlparse(target)
+            target_domain = parsed.netloc or parsed.path.split('/')[0]
+            urls = self.parse_output(output, target_domain) if success else []
             return {
                 "success": success,
                 "stdout": output,
@@ -50,22 +54,13 @@ class KatanaTool(Tool):
                 "command": " ".join(docker_cmd)
             }
 
-    def parse_output(self, stdout: str) -> List[str]:
+    def parse_output(self, stdout: str, target_domain: Optional[str] = None) -> List[str]:
         """Extract URLs from katana output, filtering static assets and out-of-scope domains."""
         import re
         from urllib.parse import urlparse
         static_exts = (
             ".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".woff", ".woff2", ".ttf", ".eot", ".otf", ".mp4", ".webm", ".pdf", ".zip", ".tar", ".gz", ".rar", ".7z", ".mp3", ".wav", ".avi", ".mov", ".mkv"
         )
-        # Try to extract the target domain from the run command args
-        # Fallback: allow all if not found
-        target_domain = None
-        for line in stdout.strip().split("\n"):
-            if line.strip().startswith("[url] - [code-"):
-                m = re.search(r'https?://([^/]+)', line)
-                if m:
-                    target_domain = m.group(1)
-                    break
         def is_valid(url):
             try:
                 parsed = urlparse(url)
