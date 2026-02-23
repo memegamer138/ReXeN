@@ -20,6 +20,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           if [ -f setup.py ]; then pip install -e .; fi
-      - name: Run tests
+      - name: Install coverage
+        run: pip install coverage
+      - name: Run tests with coverage
         run: |
-          if [ -d tests ]; then pytest; else echo "No tests directory found."; fi
+          if [ -d tests ]; then coverage run -m pytest; else echo "No tests directory found."; fi
+      - name: Report coverage
+        run: coverage report
