@@ -37,7 +37,8 @@ def test_run_pipeline_adaptive(mock_decision_engine, mock_subfinder, mock_httpx,
     ]
     user_input = "example.com"
     target = "example.com"
-    results = run_pipeline(user_input, target)
+    output = run_pipeline(user_input, target)
+    results = output["results"]
     # Check that all tools were run and results aggregated
     assert "subfinder" in results
     assert "gospider" in results
