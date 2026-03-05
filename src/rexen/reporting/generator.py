@@ -17,13 +17,14 @@ def generate_report(results, target, output_dir="reports"):
 		str: Path to the generated report file.
 	"""
 	os.makedirs(output_dir, exist_ok=True)
-	timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+	now = datetime.now()
+	timestamp = now.strftime("%Y%m%d_%H%M%S")
 	# Sanitize target for filename: remove/replace invalid characters
 	safe_target = re.sub(r'[^A-Za-z0-9_.-]', '_', target)
 	report_path = os.path.join(output_dir, f"report_{safe_target}_{timestamp}.txt")
 	with open(report_path, "w", encoding="utf-8") as f:
 		f.write(f"Recon Report for: {target}\n")
-		f.write(f"Generated: {datetime.now()}\n\n")
+		f.write(f"Generated: {now}\n\n")
 		for tool, output in results.items():
 			f.write(f"=== {tool.upper()} ===\n")
 			f.write(f"{output}\n\n")
