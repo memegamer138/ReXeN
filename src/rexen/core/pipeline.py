@@ -1,3 +1,7 @@
+
+"""
+Adaptive recon pipeline integrating orchestrator and decision engine.
+"""
 class RAGStore:
     """
     Simple in-memory RAG store for tool outputs and context.
@@ -16,9 +20,6 @@ class RAGStore:
         """Return all outputs so far as context for the LLM."""
         return self.data.copy()
 
-"""
-Adaptive recon pipeline integrating orchestrator and decision engine.
-"""
 
 
 from rexen.core.orchestrator import Orchestrator
@@ -30,7 +31,7 @@ from rexen.tools.discovery.subfinder import SubfinderTool
 from rexen.reporting.generator import generate_report
 
 
-def run_pipeline(user_input=None, target=None, scope=None):
+def run_pipeline(user_input=None, target=None):
     """
     Adaptive recon pipeline:
     1. Decision engine selects tools.
@@ -92,11 +93,11 @@ def run_pipeline(user_input=None, target=None, scope=None):
                         url_list.extend(urls)
                 if not url_list:
                     url_list = [target]
-                print(f"[pipeline] Calling {tool_name}.run with URLs: {url_list}")
-                output = tool.run(url_list, [])
+                print(f"[pipeline] Calling orchestrator.run_tool for {tool_name} with URLs: {url_list}")
+                output = orchestrator.run_tool(tool, target="", args=url_list)
             else:
-                print(f"[pipeline] Calling {tool_name}.run with target: {target}")
-                output = tool.run(target, [])
+                print(f"[pipeline] Calling orchestrator.run_tool for {tool_name} with target: {target}")
+                output = orchestrator.run_tool(tool, target, [])
             print(f"[pipeline] Output from {tool_name}: {output}")
             results[tool_name] = output
             rag_store.add(step, tool_name, output)
