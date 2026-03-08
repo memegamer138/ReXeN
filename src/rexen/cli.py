@@ -79,7 +79,9 @@ def discover(domain, output, simple):
     }
     with open(output, "w") as f:
         json.dump(output_data, f, indent=2)
-    console.print(f"[green] Results saved to {output}[/green]")
+    console.print(f"[green] Main report saved to {report_path}[/green]")
+    console.print(f"[yellow]For detailed tool outputs, check the JSON file at {output}[/yellow]")
+
 
 @cli.command()
 @click.argument("domain")

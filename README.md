@@ -133,3 +133,22 @@ For advanced usage, see the [docs/](docs/) folder.
 - Rate limiting and emergency stop
 - Immutable logs (planned)
 - No unauthorized testing—always follow program rules!
+
+## Ideas Dump
+
+## Ideas Dump
+
+- **LLM-Guided Report Templates:** Allow users to select or customize report templates/styles for different audiences (executive, technical, compliance).
+- **Historical Recon Memory:** Let the LLM review or retrieve summaries of previous discoveries for the same target or similar technologies to improve tool selection and reporting.
+- **Semantic Search for RAG:** Use embeddings/vector search to retrieve the most relevant past findings or context for the current scan.
+- **Auto-Tuning Orchestrator:** Dynamically adjust rate limits, parallelism, or tool order based on target response and previous scan performance.
+- **Plugin System:** Allow users to add custom tool wrappers, post-processing, or reporting modules via a plugin interface.
+- **Web UI/Visualization:** Build a web dashboard for visualizing recon results, timelines, and findings.
+- **API Integration:** Integrate with bug bounty platforms, ticketing systems, or notification services for automated reporting and workflow.
+- **Evidence Archiving:** Store screenshots, HTTP responses, and other artifacts for each finding.
+- **Advanced Compliance:** Add features for GDPR, SOC2, or other regulatory requirements (e.g., data redaction, audit trails).
+- **Multi-Target/Scope Support:** Run recon on multiple targets in parallel, with per-scope rules and reporting.
+- **Automated Exploitation/Validation:** Integrate with tools like nuclei or custom scripts to validate discovered issues automatically.
+- **Interactive CLI/Chat:** Add a conversational CLI or chat interface for interactive recon guidance and Q&A.
+- **Cloud/Distributed Execution:** Support running tools across multiple machines or in the cloud for large-scale recon.
+- **User Feedback Loop:** Let users rate findings or report accuracy to improve LLM prompts and tool selection over time.

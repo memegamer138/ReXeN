@@ -28,7 +28,7 @@ from rexen.tools.crawlers.gospider import GospiderTool
 from rexen.tools.crawlers.katana import KatanaTool
 from rexen.tools.discovery.httpx import HttpxTool
 from rexen.tools.discovery.subfinder import SubfinderTool
-from rexen.reporting.generator import generate_report
+from rexen.reporting.generator import render_template_report
 
 
 def run_pipeline(user_input=None, target=None):
@@ -107,20 +107,41 @@ def run_pipeline(user_input=None, target=None):
         rag_context = rag_store.get_context()
         print(f"[pipeline] Calling decision engine for next action with results so far...")
         next_action_raw = decision_engine.next_action(results, available_tools, rag_context=rag_context)
+
         # Only keep valid tool names (ignore explanations or extra text)
         if isinstance(next_action_raw, str):
             next_action = next_action_raw
-        else:
+        elif isinstance(next_action_raw, list):
             next_action = [t for t in next_action_raw if t in available_tools]
+        else:
+            print(f"[pipeline][warning] Unexpected next_action_raw type: {type(next_action_raw)}. Value: {next_action_raw}")
+            # Fallback: if LLM failed, just stop and report
+            next_action = "report"
+
         print(f"[pipeline] Decision engine next action: {next_action}")
         if next_action == "report":
             print("[pipeline] Decision engine requested report. Exiting loop.")
             break
         to_run = [t for t in next_action if t not in already_run]
 
-    # 6. Generate and return report path
-    print("[pipeline] Generating report...")
-    report_path = generate_report(results, target)
+
+    # 6. Generate and return report path using template-based reporting with LLM narrative
+    print("[pipeline] Generating report (template + LLM)...")
+    from rexen.reporting.preprocessor import preprocess_results
+    def default_llm_generate_fn(prompt):
+        # Placeholder: Replace with your LLM call (e.g., Ollama, OpenAI, etc.)
+        print(f"[LLM] Prompt: {prompt[:100]}...\n[LLM] (Truncated)")
+        return "[LLM output placeholder]"
+
+    preprocessed = preprocess_results(results)
+    report_path = render_template_report(
+        preprocessed=preprocessed,
+        target=target,
+        results=results,
+        output_dir="reports",
+        template_path=None,
+        llm_generate_fn=default_llm_generate_fn
+    )
     print(f"[pipeline] Report generated at: {report_path}")
     return {"results": results, "report_path": report_path}
 

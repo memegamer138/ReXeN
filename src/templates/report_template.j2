@@ -1,0 +1,40 @@
+# Recon Report Template (Jinja2 style)
+
+Recon Report for: {{ target }}
+Generated: {{ generated }}
+
+1. Executive Summary
+-------------------
+{{ executive_summary }}
+
+2. Key Findings
+---------------
+{{ key_findings }}
+
+3. Subdomains Discovered
+------------------------
+{% for subdomain in subdomains %}- {{ subdomain }}
+{% endfor %}
+
+4. Live URLs
+------------
+{% for url in live_urls %}- {{ url }}
+{% endfor %}
+
+5. Notable Endpoints
+--------------------
+{% for url in urls %}- {{ url }}
+{% endfor %}
+
+6. Tool Errors/Warnings
+-----------------------
+{% for error in errors %}- {{ error.tool }}: {{ error.error }}
+{% endfor %}
+
+7. Recommendations
+------------------
+{{ recommendations }}
+
+---
+Raw Tool Output (for debugging):
+{{ raw_output }}
