@@ -7,7 +7,7 @@ import requests
 import json
 
 class DecisionEngine:
-    def __init__(self, model="llama3"):
+    def __init__(self, model="llama3.1:8b"):
         self.model = model
         self.ollama_url = "http://localhost:11434/api/generate"
 
@@ -17,24 +17,28 @@ class DecisionEngine:
         Returns a list of tool names.
         """
         prompt = f"""
-You are a recon workflow decision engine. The user provided: {user_input}
+You are a recon workflow decision engine.
+The user provided: {user_input}
 Available tools: {', '.join(available_tools)}
-Which tools should be run first for optimal recon? Reply with a comma-separated list of tool names.
+Reply ONLY with a comma-separated list of tool names to run first. Do NOT include any explanation, reasoning, or extra text. Example: subfinder,katana
 """
         response = self._query_llm(prompt)
         return self._parse_tool_list(response)
 
-    def next_action(self, tool_outputs, available_tools):
+    def next_action(self, tool_outputs, available_tools, rag_context=None):
         """
-        Decide next steps based on tool outputs.
-        Returns: 'run_more', 'report', or a list of tool names to run next.
+        Decide next steps based on tool outputs and optional RAG context.
+        Returns: 'report' or a list of tool names to run next.
+        rag_context: Optional, additional context (e.g., all previous tool outputs) for LLM.
         """
         prompt = f"""
 You are a recon workflow decision engine. Here are the outputs from previous tools:
 {json.dumps(tool_outputs, indent=2)}
 Available tools: {', '.join(available_tools)}
-Should more tools be run, or should a report be generated? If more tools, list them. If report, reply 'report'.
+If more tools should be run, reply ONLY with a comma-separated list of tool names. If a report should be generated, reply ONLY with 'report'. Do NOT include any explanation, reasoning, or extra text.
 """
+        if rag_context is not None:
+            prompt += f"\nAdditional context (RAG):\n{json.dumps(rag_context, indent=2)}\n"
         response = self._query_llm(prompt)
         if "report" in response.lower():
             return "report"

@@ -21,6 +21,7 @@ from rexen.tools.crawlers.gospider import GospiderTool
 from rexen.tools.crawlers.katana import KatanaTool
 from rexen.tools.discovery.httpx import HttpxTool
 from rexen.config import config
+from rexen.core.pipeline import run_pipeline
 
 console = Console()
 
@@ -53,55 +54,32 @@ def discover(domain, output, simple):
     console.print(f"[bold green]Starting discovery for {domain}[/bold green]")
     console.print(f"[dim]Results will be saved to: {output}[/dim]")
     
-
-    # Initialize tool
-    tool = SubfinderTool()
-    if not tool.is_installed:
-        console.print(f"[red]⚠️ {tool.name} not installed[/red]")
-        console.print(f"Install with: {tool.install_url}")
-        return
+    user_input = "Discover URLs and endpoints for this domain."
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console
     ) as progress:
-        task = progress.add_task("Discovering subdomains...", total=None)
-        orchestrator = Orchestrator()
-        result = orchestrator.run_tool(tool, domain, args=[])
+        task = progress.add_task("Running adaptive recon pipeline...", total=None)
+        output_obj = run_pipeline(user_input=user_input, target=domain)
         progress.update(task, completed=100)
 
-    if result.get("success"):
-        subdomains = result.get("subdomains", [])
-        console.print(f"[green]✓ subfinder: Found {len(subdomains)} subdomains[/green]")
-        for sd in subdomains[:3]:
-            console.print(f"    [dim]{sd}[/dim]")
-    else:
-        console.print(f"[red]✗ subfinder: Failed - {result.get('error', 'Unknown error')}[/red]")
-        subdomains = []
-
-    unique_subdomains = list(set(subdomains))
-    console.print(f"[bold]Total unique subdomains found: {len(unique_subdomains)}[/bold]")
-
-    # Save results
+    results = output_obj.get("results", {})
+    report_path = output_obj.get("report_path")
+    console.print(f"[green]✓ Adaptive pipeline completed. Report generated at: {report_path}[/green]")
+    # Optionally, print summary of results
+    for tool, result in results.items():
+        console.print(f"[bold]{tool}[/bold]: {result}")
+    # Save pipeline results to output file
     output_data = {
         "domain": domain,
-        "total_subdomains": len(unique_subdomains),
-        "subdomains": unique_subdomains,
-        "tool_used": "subfinder",
+        "results": results,
+        "report_path": str(report_path),
         "timestamp": time.time()
     }
-
     with open(output, "w") as f:
         json.dump(output_data, f, indent=2)
-
     console.print(f"[green] Results saved to {output}[/green]")
-
-    if unique_subdomains:
-        console.print("\n[bold]Sample subdomains:[/bold]")
-        for sd in unique_subdomains[:5]:
-            console.print(f"  • {sd}")
-        if len(unique_subdomains) > 5:
-            console.print(f"  • ... and {len(unique_subdomains) - 5} more")
 
 @cli.command()
 @click.argument("domain")

@@ -1,14 +1,12 @@
 # Dockerfile for katana tool
-FROM alpine:3.18
-RUN apk add --no-cache curl
-ARG KATANA_VERSION=v1.4.0
-ARG KATANA_URL="https://github.com/projectdiscovery/katana/releases/download/${KATANA_VERSION}/katana_${KATANA_VERSION#v}_linux_amd64.zip"
+FROM debian:stable-slim
+RUN apt-get update && apt-get install -y curl unzip coreutils && rm -rf /var/lib/apt/lists/*
+ARG KATANA_VERSION=1.4.0
 WORKDIR /tmp
 ENV KATANA_SHA256=6ee1cfa184cff1c2cbde487e29b4feb606d8edd7f99696586bdb52f2238cbf82
-RUN apk add --no-cache curl sha256sum unzip \
-	&& curl -sSL -o katana.zip "$KATANA_URL" \
-	&& unzip katana.zip \
-	&& echo "$KATANA_SHA256  katana" | sha256sum -c - \
-	&& mv katana /usr/local/bin/katana \
-	&& chmod +x /usr/local/bin/katana \
-	&& rm -rf katana.zip LICENSE.md README.md
+RUN curl -sSL -o katana.zip "https://github.com/projectdiscovery/katana/releases/download/v${KATANA_VERSION}/katana_${KATANA_VERSION}_linux_amd64.zip" \
+    && unzip katana.zip \
+    && echo "$KATANA_SHA256  katana" | sha256sum -c - \
+    && mv katana /usr/local/bin/katana \
+    && chmod +x /usr/local/bin/katana \
+    && rm -rf katana.zip LICENSE.md README.md
