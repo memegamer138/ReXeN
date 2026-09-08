@@ -55,19 +55,26 @@ def discover(domain, output, simple):
     console.print(f"[dim]Results will be saved to: {output}[/dim]")
     
     user_input = "Discover URLs and endpoints for this domain."
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
-    ) as progress:
-        task = progress.add_task("Running adaptive recon pipeline...", total=None)
-        output_obj = run_pipeline(user_input=user_input, target=domain)
-        progress.update(task, completed=100)
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            task = progress.add_task("Running adaptive recon pipeline...", total=None)
+            output_obj = run_pipeline(user_input=user_input, target=domain)
+            progress.update(task, completed=100)
+    except RuntimeError as exc:
+        console.print(f"[red]Pipeline initialization failed: {exc}[/red]")
+        console.print("[yellow]Start Docker Desktop or the Docker service, then rerun the command.[/yellow]")
+        return
 
     results = output_obj.get("results", {})
     report_path = output_obj.get("report_path")
     console.print(f"[green]✓ Adaptive pipeline completed. Report generated at: {report_path}[/green]")
+
     # Optionally, print summary of results
+    '''
     for tool, result in results.items():
         console.print(f"[bold]{tool}[/bold]: {result}")
     # Save pipeline results to output file
@@ -79,6 +86,8 @@ def discover(domain, output, simple):
     }
     with open(output, "w") as f:
         json.dump(output_data, f, indent=2)
+        '''
+
     console.print(f"[green] Main report saved to {report_path}[/green]")
     console.print(f"[yellow]For detailed tool outputs, check the JSON file at {output}[/yellow]")
 
