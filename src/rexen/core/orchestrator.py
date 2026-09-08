@@ -30,7 +30,7 @@ class Orchestrator:
             time.sleep(1.0 / config.RATE_LIMIT_RPS - elapsed)
         self.last_request_time = time.time()
     
-    def run_tool(self, tool, target: str, args=None, **kwargs) -> Dict[str, Any]:
+    def run_tool(self, tool, target: Any, args=None, **kwargs) -> Dict[str, Any]:
         """Run a single tool with rate limiting."""
         self.rate_limit()
         console.print(f"[dim]Running {tool.name}...[/dim]")
@@ -38,7 +38,7 @@ class Orchestrator:
             args = []
         return tool.run(target, args, **kwargs)
     
-    def run_all(self, tools: List, target: str, args=None) -> Dict[str, Any]:
+    def run_all(self, tools: List, target: Any, args=None) -> Dict[str, Any]:
         """Run multiple tools in parallel."""
         results = {}
         futures = {}

@@ -71,3 +71,18 @@ def test_httpx_run_success(mock_run):
     assert result["success"] is True
     assert any(r["status_code"] == 200 for r in result["results"])
     assert any(r["status_code"] == 404 for r in result["results"])
+
+
+def test_httpx_parse_status_codes():
+    tool = HttpxTool()
+    output = (
+        "https://example.com [\x1b[32m200\x1b[0m]\n"
+        "https://example.com/missing [404]\n"
+        '{"url":"https://example.com/api","status_code":201}\n'
+    )
+
+    assert tool.parse_output(output) == [
+        {"url": "https://example.com", "status": "200"},
+        {"url": "https://example.com/missing", "status": "404"},
+        {"url": "https://example.com/api", "status": "201"},
+    ]
