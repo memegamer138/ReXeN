@@ -44,9 +44,45 @@ def render_template_report(preprocessed, target, results, output_dir=None, templ
 	# LLM-generated narrative sections
 	if llm_generate_fn is None:
 		raise ValueError("llm_generate_fn must be provided to generate narrative sections with the LLM.")
-	executive_summary = llm_generate_fn(f"Write an executive summary for a recon report on {target} based on this data:\n{json.dumps(preprocessed, indent=2)}")
-	key_findings = llm_generate_fn(f"List the key findings for a recon report on {target} based on this data:\n{json.dumps(preprocessed, indent=2)}")
-	recommendations = llm_generate_fn(f"Write recommendations for next steps or remediation for {target} based on this data:\n{json.dumps(preprocessed, indent=2)}")
+	executive_summary = llm_generate_fn(f"""
+	Write a concise, factual executive summary for an authorized reconnaissance report on {target}.
+	Use only the observed data below. State whether live URL validation completed.
+	Do not claim vulnerabilities, malicious intent, or security posture from discovery data alone.
+
+	Recon data:
+	{json.dumps(preprocessed, indent=2)}
+	""")
+	key_findings = llm_generate_fn(f"""
+	List the key findings from this authorized reconnaissance of {target}.
+	Separate observed discoveries from validated live services and hypotheses for manual testing.
+	Do not treat a URL, filename, or encoded path as proof of a vulnerability.
+	Exclude out-of-scope URLs from in-scope findings.
+
+	Recon data:
+	{json.dumps(preprocessed, indent=2)}
+	""")
+	recommendations = llm_generate_fn(
+		f"""
+	You are assisting an authorized bug bounty hunter or penetration tester.
+	Based only on the reconnaissance data below, recommend prioritized next investigation steps, not remediation.
+
+	For each recommendation, you may use the following guidelines but do not restrict yourself to them:
+	- identify the relevant URL, subdomain, or artifact
+	- explain why it is interesting as an attack-surface lead
+	- suggest safe manual validation or follow-up enumeration
+	- identify relevant methods, parameters, authentication, or authorization checks when supported by the data
+	- distinguish confirmed observations from hypotheses
+	- do not claim a vulnerability without evidence
+	- do not infer SQL injection, XXE, XSS, or impact from a URL path alone
+	- do not treat out-of-scope URLs as targets
+	- respect authorized scope and rate limits
+
+	Target: {target}
+
+	Recon data:
+	{json.dumps(preprocessed, indent=2)}
+	"""
+	)
 
 	# Prepare context
 	context = dict(preprocessed)
@@ -82,7 +118,7 @@ def generate_report(results, target, output_dir="reports", llm_generate_fn=None)
 	report_path = os.path.join(output_dir, f"llm_report_{safe_target}_{timestamp}.txt")
 
 	# Preprocess results
-	preprocessed = preprocess_results(results)
+	preprocessed = preprocess_results(results, target=target)
 
 	# Prepare LLM prompt
 	prompt = (

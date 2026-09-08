@@ -18,6 +18,27 @@ class Tool:
         self.command = command
         self.install_url = install_url
         self.is_installed = self._check_installation()
+
+    @staticmethod
+    def ensure_docker_runtime() -> tuple[bool, str | None]:
+        """Check whether Docker is installed and the daemon is running."""
+        try:
+            result = subprocess.run(
+                ["docker", "info"],
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+            )
+        except FileNotFoundError:
+            return False, "Docker is not installed or not on PATH. Install Docker Desktop or Docker Engine and try again."
+        except subprocess.TimeoutExpired:
+            return False, "Docker check timed out. Ensure Docker is running and reachable."
+
+        if result.returncode != 0:
+            message = (result.stderr or result.stdout or "Docker daemon is not running.").strip()
+            return False, message
+        return True, None
     
     def _check_installation(self) -> bool:
         """Check if tool is installed."""
