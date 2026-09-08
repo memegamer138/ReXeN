@@ -3,20 +3,13 @@ import shutil
 import pathlib
 import pytest
 from rexen.reporting import generator
+from rexen.reporting.preprocessor import preprocess_results
 
 @pytest.fixture(scope="function")
-def temp_template():
-    # Find the generator.py directory
-    gen_dir = pathlib.Path(__file__).parent.parent.parent / "src" / "rexen" / "reporting"
-    templates_dir = (gen_dir / "../../templates").resolve()
-    templates_dir.mkdir(parents=True, exist_ok=True)
-    template_path = templates_dir / "report_template.j2"
+def temp_template(tmp_path):
+    template_path = tmp_path / "report_template.j2"
     template_path.write_text("{{ target }} - {{ executive_summary }} - {{ urls|join(',') }} - {{ raw_output }}")
     yield str(template_path)
-    try:
-        template_path.unlink()
-    except FileNotFoundError:
-        pass
 
 def test_render_template_report_basic(tmp_path, temp_template):
     preprocessed = {"urls": ["http://a.com"], "findings": ["test finding"]}
@@ -30,7 +23,7 @@ def test_render_template_report_basic(tmp_path, temp_template):
         target=target,
         results=results,
         output_dir=output_dir,
-        template_path=None,  # Use default logic, which now finds the temp template
+        template_path=temp_template,
         llm_generate_fn=fake_llm
     )
     with open(report_path, "r", encoding="utf-8") as f:
@@ -48,3 +41,33 @@ def test_generate_report_fallback(tmp_path):
     assert "Recon Report for: example.com" in content
     assert "GOSPIDER" in content
     assert "http://a.com" in content
+
+
+def test_preprocess_results_calculates_authoritative_counts():
+    results = {
+        "gospider": {
+            "urls": [
+                "https://example.com/",
+                "https://example.com/",
+                "https://external.example.org/reference",
+            ]
+        },
+        "httpx": {
+            "results": [
+                {"url": "https://example.com/", "status": "200"},
+                {"url": "https://example.com/missing", "status": "404"},
+                {"url": "https://external.example.org/reference", "status": "200"},
+            ]
+        },
+    }
+
+    preprocessed = preprocess_results(results, target="https://example.com")
+
+    assert preprocessed["counts"] == {
+        "subdomains": 0,
+        "discovered_urls": 1,
+        "out_of_scope_urls": 1,
+        "probed_urls": 2,
+        "live_urls": 1,
+        "failed_urls": 1,
+    }

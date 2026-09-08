@@ -3,6 +3,15 @@
 Recon Report for: {{ target }}
 Generated: {{ generated }}
 
+Scan Counts
+-----------
+- Subdomains discovered: {{ counts.subdomains }}
+- In-scope URLs discovered: {{ counts.discovered_urls }}
+- Out-of-scope URLs: {{ counts.out_of_scope_urls }}
+- URLs probed: {{ counts.probed_urls }}
+- Live URLs validated: {{ counts.live_urls }}
+- Failed URL responses: {{ counts.failed_urls }}
+
 1. Executive Summary
 -------------------
 {{ executive_summary }}
@@ -18,7 +27,13 @@ Generated: {{ generated }}
 
 4. Live URLs
 ------------
-{% for url in live_urls %}- {{ url }}
+Live URL validation completed: {{ live_probe_completed }}
+{% for record in live_url_records %}- {{ record.url }} ({{ record.status }})
+{% endfor %}
+
+Failed URL Responses
+--------------------
+{% for record in failed_url_records %}- {{ record.url }} ({{ record.status }})
 {% endfor %}
 
 5. Notable Endpoints

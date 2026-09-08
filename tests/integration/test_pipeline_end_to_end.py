@@ -5,17 +5,10 @@ import pytest
 from unittest.mock import patch
 
 @pytest.fixture(scope="function")
-def temp_template():
-    gen_dir = pathlib.Path(__file__).parent.parent.parent / "src" / "rexen" / "reporting"
-    templates_dir = (gen_dir / "../../templates").resolve()
-    templates_dir.mkdir(parents=True, exist_ok=True)
-    template_path = templates_dir / "report_template.j2"
+def temp_template(tmp_path):
+    template_path = tmp_path / "report_template.j2"
     template_path.write_text("{{ target }} - {{ executive_summary }} - {{ urls|join(',') }} - {{ raw_output }}")
     yield str(template_path)
-    try:
-        template_path.unlink()
-    except FileNotFoundError:
-        pass
 
 def test_pipeline_end_to_end(tmp_path, temp_template):
     # Patch LLM to always return a fixed string

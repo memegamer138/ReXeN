@@ -44,10 +44,29 @@ def render_template_report(preprocessed, target, results, output_dir=None, templ
 	# LLM-generated narrative sections
 	if llm_generate_fn is None:
 		raise ValueError("llm_generate_fn must be provided to generate narrative sections with the LLM.")
+	counts = preprocessed.get("counts", {
+		"subdomains": len(preprocessed.get("subdomains", [])),
+		"discovered_urls": len(preprocessed.get("urls", [])),
+		"out_of_scope_urls": len(preprocessed.get("out_of_scope_urls", [])),
+		"probed_urls": len(preprocessed.get("live_url_records", [])) + len(preprocessed.get("failed_url_records", [])),
+		"live_urls": len(preprocessed.get("live_urls", [])),
+		"failed_urls": len(preprocessed.get("failed_url_records", [])),
+	})
+	validation_facts = {
+		"counts": counts,
+		"live_url_records": preprocessed.get("live_url_records", []),
+		"failed_url_records": preprocessed.get("failed_url_records", []),
+	}
 	executive_summary = llm_generate_fn(f"""
 	Write a concise, factual executive summary for an authorized reconnaissance report on {target}.
 	Use only the observed data below. State whether live URL validation completed.
 	Do not claim vulnerabilities, malicious intent, or security posture from discovery data alone.
+	Use the backend-provided counts exactly. Do not recalculate or infer counts from raw URLs.
+	The authoritative validation facts are below. A live URL is only one in live_url_records.
+	A failed URL returned 4xx or 5xx and must not be described as live.
+
+	Validation facts:
+	{json.dumps(validation_facts, indent=2)}
 
 	Recon data:
 	{json.dumps(preprocessed, indent=2)}
@@ -57,6 +76,11 @@ def render_template_report(preprocessed, target, results, output_dir=None, templ
 	Separate observed discoveries from validated live services and hypotheses for manual testing.
 	Do not treat a URL, filename, or encoded path as proof of a vulnerability.
 	Exclude out-of-scope URLs from in-scope findings.
+	Use the backend-provided counts exactly. Do not recalculate or infer counts from raw URLs.
+	Use the validation facts below as the source of truth for statuses.
+
+	Validation facts:
+	{json.dumps(validation_facts, indent=2)}
 
 	Recon data:
 	{json.dumps(preprocessed, indent=2)}
@@ -72,10 +96,19 @@ def render_template_report(preprocessed, target, results, output_dir=None, templ
 	- suggest safe manual validation or follow-up enumeration
 	- identify relevant methods, parameters, authentication, or authorization checks when supported by the data
 	- distinguish confirmed observations from hypotheses
+	- distinguish confirmed observations from hypotheses
 	- do not claim a vulnerability without evidence
-	- do not infer SQL injection, XXE, XSS, or impact from a URL path alone
+	- treat unusual, encoded, or JavaScript-looking paths as collection artifacts or generic leads only
+	- do not name XSS, SQL injection, XXE, traversal, authentication flaws, or impact unless the data contains direct supporting evidence
+	- do not turn a path name into a vulnerability hypothesis
+	- do not recommend manual testing of a URL as if it were live when its status is 4xx or 5xx
 	- do not treat out-of-scope URLs as targets
 	- respect authorized scope and rate limits
+	- use the backend-provided counts exactly and do not recount raw URLs
+	- use the backend-provided counts exactly and do not recount raw URLs
+	- use only live_url_records for live assets
+	- treat failed_url_records as unavailable/error responses, not live assets
+	- do not recommend revalidating a URL solely because it returned 404
 
 	Target: {target}
 
@@ -89,6 +122,7 @@ def render_template_report(preprocessed, target, results, output_dir=None, templ
 	context.update({
 		"target": target,
 		"generated": timestamp,
+		"counts": counts,
 		"executive_summary": executive_summary,
 		"key_findings": key_findings,
 		"recommendations": recommendations,

@@ -4,17 +4,10 @@ import pathlib
 import pytest
 
 @pytest.fixture(scope="function")
-def temp_template():
-    gen_dir = pathlib.Path(__file__).parent.parent.parent / "src" / "rexen" / "reporting"
-    templates_dir = (gen_dir / "../../templates").resolve()
-    templates_dir.mkdir(parents=True, exist_ok=True)
-    template_path = templates_dir / "report_template.j2"
+def temp_template(tmp_path):
+    template_path = tmp_path / "report_template.j2"
     template_path.write_text("{{ target }} - {{ executive_summary }} - {{ urls|join(',') }} - {{ raw_output }}")
     yield str(template_path)
-    try:
-        template_path.unlink()
-    except FileNotFoundError:
-        pass
 
 from unittest.mock import patch, MagicMock
 from rexen.core.pipeline import run_pipeline
@@ -25,7 +18,8 @@ from rexen.core.pipeline import run_pipeline
 @patch('rexen.core.pipeline.HttpxTool')
 @patch('rexen.core.pipeline.SubfinderTool')
 @patch('rexen.core.pipeline.DecisionEngine')
-def test_run_pipeline_adaptive(mock_decision_engine, mock_subfinder, mock_httpx, mock_katana, mock_gospider, temp_template):
+@patch('rexen.core.pipeline.render_template_report')
+def test_run_pipeline_adaptive(mock_report, mock_decision_engine, mock_subfinder, mock_httpx, mock_katana, mock_gospider):
     # Mock tool instances
     gospider = mock_gospider.return_value
     katana = mock_katana.return_value
@@ -52,6 +46,7 @@ def test_run_pipeline_adaptive(mock_decision_engine, mock_subfinder, mock_httpx,
         ["httpx"],
         "report"
     ]
+    mock_report.return_value = "report.txt"
     user_input = "example.com"
     target = "example.com"
     output = run_pipeline(user_input, target)

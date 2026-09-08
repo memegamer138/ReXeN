@@ -1,0 +1,311 @@
+# Recon Report Template (Jinja2 style)
+
+Recon Report for: https://httpbin.org
+Generated: 20260908_151545
+
+Scan Counts
+-----------
+- Subdomains discovered: 2
+- In-scope URLs discovered: 20
+- Out-of-scope URLs: 0
+- URLs probed: 22
+- Live URLs validated: 5
+- Failed URL responses: 17
+
+1. Executive Summary
+-------------------
+Here is a concise, factual executive summary of the authorized reconnaissance report on https://httpbin.org:
+
+**Summary:**
+
+The reconnaissance report was successfully completed, and the following information was gathered:
+
+* 2 subdomains were discovered: eu.httpbin.org and www.httpbin.org
+* 20 URLs were discovered, with 17 of them being failed to record (404 status)
+* 5 live URLs were validated, with the following status codes:
+	+ https://eu.httpbin.org: 200
+	+ https://httpbin.org: 200
+	+ https://httpbin.org/forms/post: 200
+	+ https://httpbin.org/spec.json: 200
+	+ https://www.httpbin.org: 200
+* The report was generated using the following tools: subfinder, katana, and httpx
+
+**Validation:**
+
+Live URL validation was completed, with 5 live URLs being successfully validated.
+
+**Counts:**
+
+* Subdomains: 2
+* Discovered URLs: 20
+* Out-of-scope URLs: 0
+* Probed URLs: 22
+* Live URLs: 5
+* Failed URLs: 17
+
+2. Key Findings
+---------------
+**Key Findings:**
+
+**Observed Discoveries:**
+
+1. **Subdomains**: 2 subdomains discovered: `eu.httpbin.org` and `www.httpbin.org`.
+2. **Discovered URLs**: 20 URLs discovered, including:
+	* `/flasgger_static/` directory
+	* `/forms/post` endpoint
+	* `/spec.json` endpoint
+	* Various JSON files in the `/flasgger_static/` directory
+3. **Out-of-scope URLs**: 0 URLs out of scope.
+
+**Validated Live Services:**
+
+1. **Live URLs**: 5 live URLs validated:
+	* `https://eu.httpbin.org` (200 OK)
+	* `https://www.httpbin.org` (200 OK)
+	* `https://httpbin.org/forms/post` (200 OK)
+	* `https://httpbin.org` (200 OK)
+	* `https://httpbin.org/spec.json` (200 OK)
+
+**Hypotheses for Manual Testing:**
+
+1. **404 errors**: 17 URLs returned 404 errors:
+	* Various files in the `/flasgger_static/` directory
+2. **Potential vulnerabilities**: URLs with suspicious characters or encoding:
+	* `https://httpbin.org/flasgger_static/e.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28t,i%29%7C%7C%28e.line=a%7C%7Ce.line,e.position=s%7C%7Ce.position,P%28e,`
+	* `https://httpbin.org/flasgger_static/t.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28e,i%29%7C%7C%28t.line=s%7C%7Ct.line,t.position=a%7C%7Ct.position,O%28t,`
+
+Note that the recon data does not provide conclusive evidence of vulnerabilities, but rather suggests potential areas for further investigation.
+
+3. Subdomains Discovered
+------------------------
+- eu.httpbin.org
+- www.httpbin.org
+
+
+4. Live URLs
+------------
+Live URL validation completed: True
+- https://eu.httpbin.org
+- https://httpbin.org
+- https://httpbin.org/forms/post
+- https://httpbin.org/spec.json
+- https://www.httpbin.org
+
+
+5. Notable Endpoints
+--------------------
+- https://httpbin.org
+- https://httpbin.org/flasgger_static/3200/oauth2-redirect.html
+- https://httpbin.org/flasgger_static/ast/jump-to-path.jsx
+- https://httpbin.org/flasgger_static/e.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28t,i%29%7C%7C%28e.line=a%7C%7Ce.line,e.position=s%7C%7Ce.position,P%28e,
+- https://httpbin.org/flasgger_static/g
+- https://httpbin.org/flasgger_static/oas3/components/callbacks.jsx
+- https://httpbin.org/flasgger_static/oas3/components/http-auth.jsx
+- https://httpbin.org/flasgger_static/oas3/components/operation-link.jsx
+- https://httpbin.org/flasgger_static/oas3/components/operation-servers.jsx
+- https://httpbin.org/flasgger_static/oas3/components/request-body-editor.jsx
+- https://httpbin.org/flasgger_static/oas3/components/request-body.jsx
+- https://httpbin.org/flasgger_static/oas3/components/servers.jsx
+- https://httpbin.org/flasgger_static/oas3/wrap-components/auth-item.jsx
+- https://httpbin.org/flasgger_static/oas3/wrap-components/model.jsx
+- https://httpbin.org/flasgger_static/oas3/wrap-components/parameters.jsx
+- https://httpbin.org/flasgger_static/oas3/wrap-components/version-stamp.jsx
+- https://httpbin.org/flasgger_static/split-pane-mode/components/split-pane-mode.jsx
+- https://httpbin.org/flasgger_static/t.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28e,i%29%7C%7C%28t.line=s%7C%7Ct.line,t.position=a%7C%7Ct.position,O%28t,
+- https://httpbin.org/forms/post
+- https://httpbin.org/spec.json
+
+
+6. Tool Errors/Warnings
+-----------------------
+- httpx: 
+    __    __  __       _  __
+   / /_  / /_/ /_____ | |/ /
+  / __ \/ __/ __/ __ \|   /
+ / / / / /_/ /_/ /_/ /   |
+/_/ /_/\__/\__/ .___/_/|_|
+             /_/
+
+		projectdiscovery.io
+
+[[34mINF[0m] Current httpx version v1.8.1 ([91moutdated[0m)
+[[93mWRN[0m] UI Dashboard is disabled, Use -dashboard option to enable
+
+
+
+7. Recommendations
+------------------
+Based on the provided reconnaissance data, I recommend the following prioritized next investigation steps:
+
+1.  **Validate the "live_urls"**: Since some URLs in the "live_urls" list have a 404 status code in the "failed_url_records" list, it's essential to manually validate these URLs to confirm their status.
+    *   URL: https://httpbin.org/flasgger_static/3200/oauth2-redirect.html
+    *   URL: https://httpbin.org/flasgger_static/ast/jump-to-path.jsx
+    *   URL: https://httpbin.org/flasgger_static/e.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28t,i%29%7C%7C%28e.line=a%7C%7Ce.line,e.position=s%7C%7Ce.position,P%28e,
+    *   URL: https://httpbin.org/flasgger_static/g
+    *   URL: https://httpbin.org/flasgger_static/oas3/components/callbacks.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/components/http-auth.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/components/operation-link.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/components/operation-servers.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/components/request-body-editor.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/components/request-body.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/components/servers.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/wrap-components/auth-item.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/wrap-components/model.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/wrap-components/parameters.jsx
+    *   URL: https://httpbin.org/flasgger_static/oas3/wrap-components/version-stamp.jsx
+    *   URL: https://httpbin.org/flasgger_static/split-pane-mode/components/split-pane-mode.jsx
+    *   URL: https://httpbin.org/flasgger_static/t.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28e,i%29%7C%7C%28t.line=s%7C%7Ct.line,t.position=a%7C%7Ct.position,O%28t,
+    *   URL: https://httpbin.org/flasgger_static/oas3/components/http-auth.jsx
+2.  **Analyze the "flasgger_static" directory**: The presence of multiple URLs in the "flasgger_static" directory, some of which are missing, might indicate a configuration or deployment issue. Investigate the directory structure and the files contained within.
+3.  **Check the "forms/post" endpoint**: The "forms/post" endpoint is present in both the "live_urls" and "failed_url_records" lists. Verify the status of this endpoint to confirm its functionality.
+4.  **Inspect the "spec.json" endpoint**: The "spec.json" endpoint is present in both the "live_urls" and "failed_url_records" lists. Check the contents of this endpoint to ensure it's correctly configured.
+5.  **Validate the "live_url_validated" evidence**: Review the "live_url_validated" evidence to confirm the status of the validated URLs. This step is essential to ensure the accuracy of the investigation.
+
+By following these recommendations, you can further investigate the findings and gain a deeper understanding of the target's configuration and potential vulnerabilities.
+
+---
+Raw Tool Output (for debugging):
+{
+  "subfinder": {
+    "success": true,
+    "stdout": "eu.httpbin.org\nwww.httpbin.org\n",
+    "stderr": "",
+    "subdomains": [
+      "eu.httpbin.org",
+      "www.httpbin.org"
+    ],
+    "subdomain_count": 2,
+    "command": "docker run --rm subfinder-image subfinder -silent -d https://httpbin.org",
+    "returncode": 0
+  },
+  "katana": {
+    "success": true,
+    "stdout": "https://httpbin.org\nhttps://httpbin.org\nhttps://httpbin.org/flasgger_static/lib/jquery.min.js\nhttps://httpbin.org/forms/post\nhttps://httpbin.org/flasgger_static/swagger-ui.css\nhttps://httpbin.org/flasgger_static/swagger-ui-standalone-preset.js\nhttps://httpbin.org/spec.json\nhttps://httpbin.org/flasgger_static/swagger-ui-bundle.js\nhttps://httpbin.org/flasgger_static/t.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28e,i%29%7C%7C%28t.line=s%7C%7Ct.line,t.position=a%7C%7Ct.position,O%28t,\nhttps://httpbin.org/flasgger_static/3200/oauth2-redirect.html\nhttps://httpbin.org/flasgger_static/github.com/necolas/normalize.css\nhttps://httpbin.org/spec.json\nhttps://httpbin.org/flasgger_static/swagger-ui-standalone-preset.js\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/parameters.jsx\nhttps://httpbin.org/flasgger_static/oas3/components/servers.jsx\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/model.jsx\nhttps://httpbin.org/flasgger_static/oas3/components/request-body-editor.jsx\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/auth-item.jsx\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/version-stamp.jsx\nhttps://httpbin.org/flasgger_static/split-pane-mode/components/split-pane-mode.jsx\nhttps://httpbin.org/flasgger_static/oas3/components/request-body.jsx\nhttps://httpbin.org/flasgger_static/oas3/components/operation-link.jsx\nhttps://httpbin.org/flasgger_static/oas3/components/operation-servers.jsx\nhttps://httpbin.org/flasgger_static/oas3/components/http-auth.jsx\nhttps://httpbin.org/flasgger_static/oas3/components/callbacks.jsx\nhttps://httpbin.org/flasgger_static/ast/jump-to-path.jsx\nhttps://httpbin.org/flasgger_static/g\nhttps://httpbin.org/flasgger_static/Immutable.js\nhttps://httpbin.org/flasgger_static/view/index.js\nhttps://httpbin.org/flasgger_static/view/root-injects.js\nhttps://httpbin.org/flasgger_static/util/index.js\nhttps://httpbin.org/flasgger_static/swagger-js/index.js\nhttps://httpbin.org/flasgger_static/split-pane-mode/index.js\nhttps://httpbin.org/flasgger_static/spec/wrap-actions.js\nhttps://httpbin.org/flasgger_static/spec/selectors.js\nhttps://httpbin.org/flasgger_static/spec/reducers.js\nhttps://httpbin.org/flasgger_static/spec/index.js\nhttps://httpbin.org/flasgger_static/spec/actions.js\nhttps://httpbin.org/flasgger_static/samples/index.js\nhttps://httpbin.org/flasgger_static/samples/fn.js\nhttps://httpbin.org/flasgger_static/on-complete/index.js\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/online-validator-badge.js\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/markdown.js\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/index.js\nhttps://httpbin.org/flasgger_static/oas3/spec-extensions/selectors.js\nhttps://httpbin.org/flasgger_static/oas3/reducers.js\nhttps://httpbin.org/flasgger_static/oas3/spec-extensions/wrap-selectors.js\nhttps://httpbin.org/flasgger_static/oas3/selectors.js\nhttps://httpbin.org/flasgger_static/oas3/index.js\nhttps://httpbin.org/flasgger_static/oas3/helpers.js\nhttps://httpbin.org/flasgger_static/oas3/components/index.js\nhttps://httpbin.org/flasgger_static/oas3/actions.js\nhttps://httpbin.org/flasgger_static/oas3/auth-extensions/wrap-selectors.js\nhttps://httpbin.org/flasgger_static/logs/index.js\nhttps://httpbin.org/flasgger_static/layout/actions.js\nhttps://httpbin.org/flasgger_static/layout/selectors.js\nhttps://httpbin.org/flasgger_static/layout/index.js\nhttps://httpbin.org/flasgger_static/layout/reducers.js\nhttps://httpbin.org/flasgger_static/filter/opsFilter.js\nhttps://httpbin.org/flasgger_static/filter/index.js\nhttps://httpbin.org/flasgger_static/err/selectors.js\nhttps://httpbin.org/flasgger_static/err/index.js\nhttps://httpbin.org/flasgger_static/err/error-transformers/transformers/strip-instance.js\nhttps://httpbin.org/flasgger_static/err/error-transformers/transformers/parameter-oneof.js\nhttps://httpbin.org/flasgger_static/err/actions.js\nhttps://httpbin.org/flasgger_static/err/error-transformers/transformers/not-of-type.js\nhttps://httpbin.org/flasgger_static/err/error-transformers/hook.js\nhttps://httpbin.org/flasgger_static/download-url.js\nhttps://httpbin.org/flasgger_static/deep-linking/layout-wrap-actions.js\nhttps://httpbin.org/flasgger_static/deep-linking/index.js\nhttps://httpbin.org/flasgger_static/deep-linking/helpers.js\nhttps://httpbin.org/flasgger_static/configs/spec-actions.js\nhttps://httpbin.org/flasgger_static/configs/reducers.js\nhttps://httpbin.org/flasgger_static/configs/selectors.js\nhttps://httpbin.org/flasgger_static/configs/index.js\nhttps://httpbin.org/flasgger_static/deep-linking/spec-wrap-actions.js\nhttps://httpbin.org/flasgger_static/configs/helpers.js\nhttps://httpbin.org/flasgger_static/configs/actions.js\nhttps://httpbin.org/flasgger_static/auth/spec-wrap-actions.js\nhttps://httpbin.org/flasgger_static/auth/selectors.js\nhttps://httpbin.org/flasgger_static/auth/reducers.js\nhttps://httpbin.org/flasgger_static/auth/index.js\nhttps://httpbin.org/flasgger_static/ast/index.js\nhttps://httpbin.org/flasgger_static/all.js\nhttps://httpbin.org/flasgger_static/ast/ast.js\nhttps://httpbin.org/flasgger_static/e.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28t,i%29%7C%7C%28e.line=a%7C%7Ce.line,e.position=s%7C%7Ce.position,P%28e,\nhttps://httpbin.org/flasgger_static/Autolinker.js\nhttps://httpbin.org/flasgger_static/index.js\nhttps://httpbin.org/flasgger_static/auth/actions.js\nhttps://httpbin.org/flasgger_static/swagger-ui-bundle.js\nhttps://httpbin.org/flasgger_static/err/reducers.js\n",
+    "stderr": "",
+    "urls": [
+      "https://httpbin.org",
+      "https://httpbin.org",
+      "https://httpbin.org/forms/post",
+      "https://httpbin.org/spec.json",
+      "https://httpbin.org/flasgger_static/t.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28e,i%29%7C%7C%28t.line=s%7C%7Ct.line,t.position=a%7C%7Ct.position,O%28t,",
+      "https://httpbin.org/flasgger_static/3200/oauth2-redirect.html",
+      "https://httpbin.org/spec.json",
+      "https://httpbin.org/flasgger_static/oas3/wrap-components/parameters.jsx",
+      "https://httpbin.org/flasgger_static/oas3/components/servers.jsx",
+      "https://httpbin.org/flasgger_static/oas3/wrap-components/model.jsx",
+      "https://httpbin.org/flasgger_static/oas3/components/request-body-editor.jsx",
+      "https://httpbin.org/flasgger_static/oas3/wrap-components/auth-item.jsx",
+      "https://httpbin.org/flasgger_static/oas3/wrap-components/version-stamp.jsx",
+      "https://httpbin.org/flasgger_static/split-pane-mode/components/split-pane-mode.jsx",
+      "https://httpbin.org/flasgger_static/oas3/components/request-body.jsx",
+      "https://httpbin.org/flasgger_static/oas3/components/operation-link.jsx",
+      "https://httpbin.org/flasgger_static/oas3/components/operation-servers.jsx",
+      "https://httpbin.org/flasgger_static/oas3/components/http-auth.jsx",
+      "https://httpbin.org/flasgger_static/oas3/components/callbacks.jsx",
+      "https://httpbin.org/flasgger_static/ast/jump-to-path.jsx",
+      "https://httpbin.org/flasgger_static/g",
+      "https://httpbin.org/flasgger_static/e.json%7C%7Cu.call%28n,i%29%7C%7C%21u.call%28t,i%29%7C%7C%28e.line=a%7C%7Ce.line,e.position=s%7C%7Ce.position,P%28e,"
+    ],
+    "url_count": 22,
+    "command": "docker run --rm katana-image katana -u https://httpbin.org -d 2 -jc -silent",
+    "returncode": 0
+  },
+  "httpx": {
+    "success": true,
+    "stdout": "https://eu.httpbin.org [\u001b[32m200\u001b[0m]\nhttps://httpbin.org/flasgger_static/e.json||u.call(n,i)||!u.call(t,i)||(e.line=a||e.line,e.position=s||e.position,P(e, [\u001b[31m404\u001b[0m]\nhttps://www.httpbin.org [\u001b[32m200\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/components/operation-servers.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/auth-item.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/parameters.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/version-stamp.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/components/http-auth.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/forms/post [\u001b[32m200\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/components/servers.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/components/callbacks.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org [\u001b[32m200\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/components/request-body.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/components/request-body-editor.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/wrap-components/model.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/t.json||u.call(n,i)||!u.call(e,i)||(t.line=s||t.line,t.position=a||t.position,O(t, [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/3200/oauth2-redirect.html [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/g [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/ast/jump-to-path.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/oas3/components/operation-link.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/flasgger_static/split-pane-mode/components/split-pane-mode.jsx [\u001b[31m404\u001b[0m]\nhttps://httpbin.org/spec.json [\u001b[32m200\u001b[0m]\n",
+    "stderr": "\n    __    __  __       _  __\n   / /_  / /_/ /_____ | |/ /\n  / __ \\/ __/ __/ __ \\|   /\n / / / / /_/ /_/ /_/ /   |\n/_/ /_/\\__/\\__/ .___/_/|_|\n             /_/\n\n\t\tprojectdiscovery.io\n\n[\u001b[34mINF\u001b[0m] Current httpx version v1.8.1 (\u001b[91moutdated\u001b[0m)\n[\u001b[93mWRN\u001b[0m] UI Dashboard is disabled, Use -dashboard option to enable\n",
+    "results": [
+      {
+        "url": "https://eu.httpbin.org",
+        "status": "200"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/e.json||u.call(n,i)||!u.call(t,i)||(e.line=a||e.line,e.position=s||e.position,P(e,",
+        "status": "404"
+      },
+      {
+        "url": "https://www.httpbin.org",
+        "status": "200"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/components/operation-servers.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/wrap-components/auth-item.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/wrap-components/parameters.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/wrap-components/version-stamp.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/components/http-auth.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/forms/post",
+        "status": "200"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/components/servers.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/components/callbacks.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org",
+        "status": "200"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/components/request-body.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/components/request-body-editor.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/wrap-components/model.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/t.json||u.call(n,i)||!u.call(e,i)||(t.line=s||t.line,t.position=a||t.position,O(t,",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/3200/oauth2-redirect.html",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/g",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/ast/jump-to-path.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/oas3/components/operation-link.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/flasgger_static/split-pane-mode/components/split-pane-mode.jsx",
+        "status": "404"
+      },
+      {
+        "url": "https://httpbin.org/spec.json",
+        "status": "200"
+      }
+    ],
+    "result_count": 22,
+    "command": "docker run --rm -v C:\\Users\\vshak\\AppData\\Local\\Temp\\tmpdoayh7z0:/input.txt httpx-image httpx -l /input.txt -status-code",
+    "returncode": 0
+  }
+}
