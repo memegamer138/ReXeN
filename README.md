@@ -136,8 +136,7 @@ For advanced usage, see the [docs/](docs/) folder.
 
 ## Ideas Dump
 
-## Ideas Dump
-
+- **One-Command Setup:** Add a `rexen setup` command that checks Python, Docker, and Ollama availability, pulls prebuilt recon-tool images, verifies the required containers, and guides users through any missing prerequisites instead of requiring manual image builds.
 - **LLM-Guided Report Templates:** Allow users to select or customize report templates/styles for different audiences (executive, technical, compliance).
 - **Historical Recon Memory:** Let the LLM review or retrieve summaries of previous discoveries for the same target or similar technologies to improve tool selection and reporting.
 - **Semantic Search for RAG:** Use embeddings/vector search to retrieve the most relevant past findings or context for the current scan.

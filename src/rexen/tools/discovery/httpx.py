@@ -10,6 +10,8 @@ docker run --rm httpx-image httpx -u https://httpbin.org/ -json
 from ..base import Tool
 from typing import List, Dict, Any
 import subprocess
+import json
+import re
 
 class HttpxTool(Tool):
     """Wrapper for httpx tool (dockerized)."""
@@ -37,7 +39,7 @@ class HttpxTool(Tool):
                 "docker", "run", "--rm",
                 "-v", f"{input_file}:/input.txt",
                 self.image,
-                "httpx", "-l", "/input.txt"
+                "httpx", "-l", "/input.txt", "-status-code"
             ] + (args or [])
             result = subprocess.run(
                 docker_cmd,
@@ -75,10 +77,28 @@ class HttpxTool(Tool):
         """Parse httpx output into structured results."""
         results = []
         for line in stdout.strip().split("\n"):
-            if line:
-                # httpx default output: URL [status] [title] [tech]
-                parts = line.split()
-                url = parts[0]
-                status = parts[1] if len(parts) > 1 else None
-                results.append({"url": url, "status": status})
+            line = re.sub(r"\x1b\[[0-9;]*m", "", line).strip()
+            if not line:
+                continue
+
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                record = None
+
+            if isinstance(record, dict) and record.get("url"):
+                status = record.get("status") or record.get("status_code")
+                results.append({
+                    "url": record["url"],
+                    "status": str(status) if status is not None else None,
+                })
+                continue
+
+            # httpx text output: URL [status] [title] [technology]
+            match = re.match(r"^(\S+)(?:\s+\[(\d{3})\])?", line)
+            if match:
+                results.append({
+                    "url": match.group(1),
+                    "status": match.group(2),
+                })
         return results
